@@ -27,9 +27,9 @@ OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 extern "C" bool obs_module_load(void)
 {
 	obs_log(LOG_INFO, "OmniProjector loaded (version %s)", PLUGIN_VERSION);
-    
-    OmniProjectorDock::Register();
-    
+
+	OmniProjectorDock::Register();
+
 	return true;
 }
 
