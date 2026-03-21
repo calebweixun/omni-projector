@@ -50,8 +50,7 @@ void OmniProjectorManager::StopAllProjections()
 	for (QWidget *widget : QApplication::topLevelWidgets()) {
 		if (widget->isWindow()) {
 			QString title = widget->windowTitle();
-			if (title.contains("Projector", Qt::CaseInsensitive) || 
-			    title.contains("投影") || 
+			if (title.contains("Projector", Qt::CaseInsensitive) || title.contains("投影") ||
 			    QString(widget->metaObject()->className()).contains("OBSProjector")) {
 				widget->close();
 			}
@@ -119,7 +118,7 @@ SourceGroups OmniProjectorManager::GetAvailableSources()
 			continue;
 		std::string name = obs_source_get_name(scene);
 		groups.scenes.push_back(name);
-		
+
 		// 避免與 EnumSources 中重複加入
 		auto it = std::find(groups.sources.begin(), groups.sources.end(), name);
 		if (it != groups.sources.end()) {

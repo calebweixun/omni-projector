@@ -86,7 +86,7 @@ void OmniProjectorDock::RefreshMappings()
 		rowLayout->setContentsMargins(5, 2, 5, 2);
 
 		QComboBox *sourceCombo = new QComboBox();
-		
+
 		// 加入「輸出」與分隔線
 		sourceCombo->addItem("輸出");
 		sourceCombo->insertSeparator(sourceCombo->count());
