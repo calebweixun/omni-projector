@@ -167,3 +167,10 @@ void OmniProjectorDock::Register()
 	// 加入到「工具 (Tools)」選單，當作備用的開啟方式
 	obs_frontend_add_tools_menu_item("OmniProjector 投影配置", ShowOmniProjectorDock, nullptr);
 }
+
+void OmniProjectorDock::RefreshAll()
+{
+	if (g_omniProjectorDock) {
+		g_omniProjectorDock->RefreshMappings();
+	}
+}

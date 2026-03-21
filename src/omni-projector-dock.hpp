@@ -11,6 +11,7 @@ public:
 	~OmniProjectorDock();
 
 	static void Register();
+	static void RefreshAll();
 
 private:
 	QVBoxLayout *listLayout;

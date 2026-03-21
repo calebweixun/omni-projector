@@ -1,6 +1,26 @@
 #include "omni-projector-settings.hpp"
 #include <obs-module.h>
+#include <obs-frontend-api.h>
 #include <util/config-file.h>
+#include <util/platform.h>
+
+// 取得當前 OBS 設定檔目錄下的插件配置路徑
+static std::string GetProfileSettingsPath()
+{
+	char *profile_path = obs_frontend_get_current_profile_path();
+	if (!profile_path) {
+		// fallback：若前端 API 尚未就緒，使用插件自身目錄
+		char *fallback = obs_module_get_config_path(obs_current_module(), "settings.json");
+		std::string result(fallback);
+		bfree(fallback);
+		return result;
+	}
+
+	std::string path(profile_path);
+	path += "/omni-projector.json";
+	bfree(profile_path);
+	return path;
+}
 
 void OmniProjectorSettings::Save(const std::vector<MappingEntry> &mappings)
 {
@@ -17,11 +37,9 @@ void OmniProjectorSettings::Save(const std::vector<MappingEntry> &mappings)
 
 	obs_data_set_array(data, "mappings", array);
 
-	// 儲存至 OBS 的插件設定目錄
-	char *bin_path = obs_module_get_config_path(obs_current_module(), "settings.json");
-	obs_data_save_json(data, bin_path);
+	std::string path = GetProfileSettingsPath();
+	obs_data_save_json(data, path.c_str());
 
-	bfree(bin_path);
 	obs_data_array_release(array);
 	obs_data_release(data);
 }
@@ -29,9 +47,9 @@ void OmniProjectorSettings::Save(const std::vector<MappingEntry> &mappings)
 std::vector<MappingEntry> OmniProjectorSettings::Load()
 {
 	std::vector<MappingEntry> mappings;
-	char *bin_path = obs_module_get_config_path(obs_current_module(), "settings.json");
+	std::string path = GetProfileSettingsPath();
 
-	obs_data_t *data = obs_data_create_from_json_file(bin_path);
+	obs_data_t *data = obs_data_create_from_json_file(path.c_str());
 	if (data) {
 		obs_data_array_t *array = obs_data_get_array(data, "mappings");
 		size_t count = obs_data_array_count(array);
@@ -46,6 +64,5 @@ std::vector<MappingEntry> OmniProjectorSettings::Load()
 		obs_data_release(data);
 	}
 
-	bfree(bin_path);
 	return mappings;
 }
