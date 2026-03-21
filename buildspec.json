@@ -33,13 +33,13 @@
     },
     "platformConfig": {
         "macos": {
-            "bundleId": "com.example.plugintemplate-for-obs"
+            "bundleId": "com.caleb.omni-projector"
         }
     },
-    "name": "plugintemplate-for-obs",
-    "displayName": "Plugin Template for OBS",
-    "version": "1.0.0",
-    "author": "Your Name Here",
-    "website": "https://example.com",
-    "email": "me@example.com"
+    "name": "omni-projector",
+    "displayName": "OmniProjector",
+    "version": "0.1.0",
+    "author": "Caleb",
+    "website": "https://github.com/c2leb/omni-projector",
+    "email": "caleb@example.com"
 }
