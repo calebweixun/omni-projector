@@ -18,10 +18,7 @@ void OmniProjectorManager::StartProjection(obs_source_t *source, int monitor_id)
 {
 	if (!source)
 		return;
-	/* obs_frontend_open_projector(type, monitor, geometry)
-     * type: "Source", "Scene", "Preview", "StudioProgram", "Multiview"
-     * monitor: 螢幕索引, -1 代表視窗模式
-     * geometry: 視窗幾何位置字串 (全螢幕投影時傳 NULL) */
+	const char *name = obs_source_get_name(source);
 	obs_frontend_open_projector("Source", monitor_id, nullptr, name);
 }
 
