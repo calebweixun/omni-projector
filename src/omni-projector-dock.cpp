@@ -1,6 +1,5 @@
 #include "omni-projector-dock.hpp"
 #include "omni-projector-manager.hpp"
-#include <obs-module.h>
 #include <obs-frontend-api.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -148,10 +147,10 @@ void OmniProjectorDock::RefreshMappings()
 void OmniProjectorDock::Register()
 {
 	auto cb = [](void *data, bool visible) -> QWidget * {
-		OBS_UNUSED(data);
-		OBS_UNUSED(visible);
+		(void)data;
+		(void)visible;
 		return new OmniProjectorDock();
 	};
 
-	obs_frontend_add_dock(obs_module_get_config_name(obs_current_module()), "OmniProjector", cb, nullptr);
+	obs_frontend_add_dock("OmniProjectorDock", "OmniProjector", cb, nullptr);
 }
