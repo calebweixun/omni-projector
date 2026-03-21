@@ -1,77 +1,134 @@
 #include "omni-projector-dock.hpp"
 #include "omni-projector-manager.hpp"
 #include <obs-frontend-api.h>
-#include <QLabel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QComboBox>
 #include <QPushButton>
-#include <QTableWidget>
-#include <QHeaderView>
+#include <QScrollArea>
 #include <QMainWindow>
+#include <QScreen>
+#include <QGuiApplication>
 
 OmniProjectorDock::OmniProjectorDock(QWidget *parent)
     : QDockWidget(parent)
 {
     setObjectName("OmniProjectorDock");
-    setWindowTitle("OmniProjector Matrix Switcher");
+    setWindowTitle("OmniProjector");
     
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
     
-    // 矩陣表格
-    QTableWidget *table = new QTableWidget(this);
-    table->setColumnCount(2);
-    table->setHorizontalHeaderLabels({"顯示器 (Monitor)", "內容來源 (Source)"});
-    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    // 頂部：添加按鈕
+    QPushButton *addBtn = new QPushButton("＋ 添加投影對應 (Add Mapping)");
+    mainLayout->addWidget(addBtn);
     
-    int monitorCount = OmniProjectorManager::Get().GetMonitorCount();
-    std::vector<std::string> sources = OmniProjectorManager::Get().GetAvailableSources();
+    // 中間：捲動區域
+    QScrollArea *scrollArea = new QScrollArea(this);
+    scrollArea->setWidgetResizable(true);
+    QWidget *listWidget = new QWidget();
+    listLayout = new QVBoxLayout(listWidget);
+    listLayout->setAlignment(Qt::AlignTop);
+    scrollArea->setWidget(listWidget);
+    mainLayout->addWidget(scrollArea);
     
-    table->setRowCount(monitorCount);
-    for (int i = 0; i < monitorCount; ++i) {
-        // Monitor Label
-        table->setItem(i, 0, new QTableWidgetItem(QString("Monitor %1").arg(i + 1)));
-        
-        // Source Selector + Action
-        QWidget *cellWidget = new QWidget();
-        QHBoxLayout *cellLayout = new QHBoxLayout(cellWidget);
-        cellLayout->setContentsMargins(2, 2, 2, 2);
-        
-        QComboBox *combo = new QComboBox();
-        for (const auto& s : sources) {
-            combo->addItem(QString::fromStdString(s));
-        }
-        
-        QPushButton *btn = new QPushButton("投影 (Project)");
-        
-        cellLayout->addWidget(combo);
-        cellLayout->addWidget(btn);
-        
-        table->setCellWidget(i, 1, cellWidget);
-        
-        // 接連按鈕事件 (這裡可以使用 Lambda)
-        connect(btn, &QPushButton::clicked, [i, combo]() {
-            std::string sourceName = combo->currentText().toStdString();
-            obs_source_t *source = obs_get_source_by_name(sourceName.c_str());
-            if (source) {
-                OmniProjectorManager::Get().StartProjection(source, i);
-                obs_source_release(source);
-            }
-        });
-    }
-    
-    mainLayout->addWidget(table);
-    
-    // 全場控制按鈕
-    QPushButton *stopBtn = new QPushButton("停止所有投影 (Stop All)");
-    mainLayout->addWidget(stopBtn);
+    // 底部：批次控制
+    QHBoxLayout *bottomLayout = new QHBoxLayout();
+    QPushButton *projectAllBtn = new QPushButton("全部開啟 (Project All)");
+    QPushButton *stopAllBtn = new QPushButton("一鍵全關 (Close All)");
+    bottomLayout->addWidget(projectAllBtn);
+    bottomLayout->addWidget(stopAllBtn);
+    mainLayout->addLayout(bottomLayout);
     
     setWidget(centralWidget);
+    
+    // 初始載入
+    RefreshMappings();
+    
+    // 綁定事件
+    connect(addBtn, &QPushButton::clicked, [this]() {
+        OmniProjectorManager::Get().AddMapping("", 0);
+        RefreshMappings();
+    });
+    
+    connect(projectAllBtn, &QPushButton::clicked, []() {
+        OmniProjectorManager::Get().ProjectAll();
+    });
+    
+    connect(stopAllBtn, &QPushButton::clicked, []() {
+        OmniProjectorManager::Get().StopAllProjections();
+    });
 }
 
 OmniProjectorDock::~OmniProjectorDock()
 {
+}
+
+void OmniProjectorDock::RefreshMappings()
+{
+    // 清空舊列表
+    QLayoutItem *item;
+    while ((item = listLayout->takeAt(0)) != nullptr) {
+        if (item->widget()) delete item->widget();
+        delete item;
+    }
+    
+    auto screens = QGuiApplication::screens();
+    int monitorCount = screens.size();
+    
+    for (int i = 0; i < (int)mappings.size(); ++i) {
+        const auto& entry = mappings[i];
+        
+        QWidget *row = new QWidget();
+        QHBoxLayout *rowLayout = new QHBoxLayout(row);
+        rowLayout->setContentsMargins(5, 2, 5, 2);
+        
+        QComboBox *sourceCombo = new QComboBox();
+        for (const auto& s : sources) sourceCombo->addItem(QString::fromStdString(s));
+        sourceCombo->setCurrentText(QString::fromStdString(entry.source_name));
+        
+        QComboBox *monitorCombo = new QComboBox();
+        for (int m = 0; m < monitorCount; ++m) {
+            QString name = screens[m]->name();
+            monitorCombo->addItem(QString("[%1] %2").arg(m).arg(name));
+        }
+        monitorCombo->setCurrentIndex(entry.monitor_index);
+        
+        QPushButton *goBtn = new QPushButton("Go");
+        QPushButton *delBtn = new QPushButton("Del");
+        delBtn->setFixedWidth(40);
+        
+        rowLayout->addWidget(sourceCombo);
+        rowLayout->addWidget(monitorCombo);
+        rowLayout->addWidget(goBtn);
+        rowLayout->addWidget(delBtn);
+        
+        listLayout->addWidget(row);
+        
+        // 更新與存檔事件
+        connect(sourceCombo, &QComboBox::currentTextChanged, [i, sourceCombo, monitorCombo]() {
+            OmniProjectorManager::Get().UpdateMapping(i, sourceCombo->currentText().toStdString(), monitorCombo->currentIndex());
+        });
+        
+        connect(monitorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [i, sourceCombo, monitorCombo](int index) {
+            OmniProjectorManager::Get().UpdateMapping(i, sourceCombo->currentText().toStdString(), index);
+        });
+        
+        connect(goBtn, &QPushButton::clicked, [sourceCombo, monitorCombo]() {
+            std::string sourceName = sourceCombo->currentText().toStdString();
+            int mIdx = monitorCombo->currentIndex();
+            obs_source_t *source = obs_get_source_by_name(sourceName.c_str());
+            if (source) {
+                OmniProjectorManager::Get().StartProjection(source, mIdx);
+                obs_source_release(source);
+            }
+        });
+        
+        connect(delBtn, &QPushButton::clicked, [this, i]() {
+            OmniProjectorManager::Get().RemoveMapping(i);
+            RefreshMappings();
+        });
+    }
 }
 
 void OmniProjectorDock::Register()
