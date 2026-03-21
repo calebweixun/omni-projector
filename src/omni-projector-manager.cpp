@@ -93,10 +93,14 @@ std::vector<std::string> OmniProjectorManager::GetAvailableSources()
 	obs_enum_sources(EnumSources, &source_list);
 
 	// 2. 取得所有場景 (Scenes)
-	struct obs_frontend_source_list scenes;
+	// 在 OBS 啟動初期 (obs_module_load)，前端 API 可能尚未準備就緒。
+	// 若未將 scenes 初始化，API 沒設值會導致 num 變成垃圾記憶體而引發 SIGSEGV 崩潰。
+	struct obs_frontend_source_list scenes = {0};
 	obs_frontend_get_scenes(&scenes);
 	for (size_t i = 0; i < scenes.sources.num; i++) {
 		obs_source_t *scene = scenes.sources.array[i];
+		if (!scene)
+			continue;
 		std::string name = obs_source_get_name(scene);
 		// 避免與 EnumSources 中重複加入
 		if (std::find(source_list.begin(), source_list.end(), name) == source_list.end()) {
