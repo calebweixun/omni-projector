@@ -75,9 +75,13 @@ void OmniProjectorManager::LoadSettings()
 	mappings = OmniProjectorSettings::Load();
 }
 
+#include <algorithm>
+
 std::vector<std::string> OmniProjectorManager::GetAvailableSources()
 {
 	std::vector<std::string> source_list;
+
+	// 1. 取得一般來源 (Sources)
 	auto EnumSources = [](void *data, obs_source_t *source) {
 		auto *list = static_cast<std::vector<std::string> *>(data);
 		uint32_t caps = obs_source_get_output_flags(source);
@@ -87,6 +91,20 @@ std::vector<std::string> OmniProjectorManager::GetAvailableSources()
 		return true;
 	};
 	obs_enum_sources(EnumSources, &source_list);
+
+	// 2. 取得所有場景 (Scenes)
+	struct obs_frontend_source_list scenes;
+	obs_frontend_get_scenes(&scenes);
+	for (size_t i = 0; i < scenes.sources.num; i++) {
+		obs_source_t *scene = scenes.sources.array[i];
+		std::string name = obs_source_get_name(scene);
+		// 避免與 EnumSources 中重複加入
+		if (std::find(source_list.begin(), source_list.end(), name) == source_list.end()) {
+			source_list.push_back(name);
+		}
+	}
+	obs_frontend_source_list_free(&scenes);
+
 	return source_list;
 }
 

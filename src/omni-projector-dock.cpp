@@ -18,9 +18,13 @@ OmniProjectorDock::OmniProjectorDock(QWidget *parent) : QDockWidget(parent)
 	QWidget *centralWidget = new QWidget(this);
 	QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
 
-	// 頂部：添加按鈕
-	QPushButton *addBtn = new QPushButton("＋ 添加投影對應 (Add Mapping)");
-	mainLayout->addWidget(addBtn);
+	// 頂部：添加按鈕與重新整理
+	QHBoxLayout *topLayout = new QHBoxLayout();
+	QPushButton *addBtn = new QPushButton("＋ 添加投影對應 (Add)");
+	QPushButton *refreshBtn = new QPushButton("↺ 重新整理 (Refresh)");
+	topLayout->addWidget(addBtn);
+	topLayout->addWidget(refreshBtn);
+	mainLayout->addLayout(topLayout);
 
 	// 中間：捲動區域
 	QScrollArea *scrollArea = new QScrollArea(this);
@@ -49,6 +53,8 @@ OmniProjectorDock::OmniProjectorDock(QWidget *parent) : QDockWidget(parent)
 		OmniProjectorManager::Get().AddMapping("", 0);
 		RefreshMappings();
 	});
+
+	connect(refreshBtn, &QPushButton::clicked, [this]() { RefreshMappings(); });
 
 	connect(projectAllBtn, &QPushButton::clicked, []() { OmniProjectorManager::Get().ProjectAll(); });
 
@@ -92,8 +98,8 @@ void OmniProjectorDock::RefreshMappings()
 		monitorCombo->setCurrentIndex(entry.monitor_index);
 
 		QPushButton *goBtn = new QPushButton("Go");
-		QPushButton *delBtn = new QPushButton("Del");
-		delBtn->setFixedWidth(40);
+		QPushButton *delBtn = new QPushButton("X");
+		delBtn->setFixedWidth(30);
 
 		rowLayout->addWidget(sourceCombo);
 		rowLayout->addWidget(monitorCombo);
