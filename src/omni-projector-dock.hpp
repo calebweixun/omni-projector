@@ -4,15 +4,15 @@
 #include <QVBoxLayout>
 
 class OmniProjectorDock : public QDockWidget {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit OmniProjectorDock(QWidget *parent = nullptr);
-    ~OmniProjectorDock();
+	explicit OmniProjectorDock(QWidget *parent = nullptr);
+	~OmniProjectorDock();
 
-    static void Register();
+	static void Register();
 
 private:
-    QVBoxLayout *listLayout;
-    void RefreshMappings();
+	QVBoxLayout *listLayout;
+	void RefreshMappings();
 };
