@@ -58,6 +58,25 @@ void OmniProjectorManager::StopAllProjections()
 	}
 }
 
+void OmniProjectorManager::StopProjectionByName(const std::string &sourceName)
+{
+	if (sourceName.empty())
+		return;
+
+	QString target = QString::fromStdString(sourceName);
+	for (QWidget *widget : QApplication::topLevelWidgets()) {
+		if (widget->isWindow()) {
+			QString title = widget->windowTitle();
+			// 檢查視窗標題是否包含來源名稱（OBS 的投影視窗標題通常包含來源名稱）
+			if (title.contains(target, Qt::CaseInsensitive) &&
+			    (title.contains("Projector", Qt::CaseInsensitive) || title.contains("投影") ||
+			     QString(widget->metaObject()->className()).contains("OBSProjector"))) {
+				widget->close();
+			}
+		}
+	}
+}
+
 void OmniProjectorManager::AddMapping(const std::string &source, int monitor)
 {
 	mappings.push_back({source, monitor});
@@ -75,6 +94,8 @@ void OmniProjectorManager::UpdateMapping(int index, const std::string &source, i
 void OmniProjectorManager::RemoveMapping(int index)
 {
 	if (index >= 0 && index < (int)mappings.size()) {
+		std::string name = mappings[index].source_name;
+		StopProjectionByName(name);
 		mappings.erase(mappings.begin() + index);
 		SaveSettings();
 	}

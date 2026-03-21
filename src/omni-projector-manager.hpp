@@ -18,6 +18,7 @@ public:
 	void StartProjection(const std::string &sourceName, int monitor_id);
 	void ProjectAll();
 	void StopAllProjections();
+	void StopProjectionByName(const std::string &sourceName);
 
 	// 配置管理
 	void AddMapping(const std::string &source, int monitor);
