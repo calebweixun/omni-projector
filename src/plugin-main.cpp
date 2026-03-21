@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>
 */
 
-#include <obs_module.h>
+#include <obs-module.h>
 #include <obs-frontend-api.h>
 #include "omni-projector-dock.hpp"
 #include <plugin-support.h>
