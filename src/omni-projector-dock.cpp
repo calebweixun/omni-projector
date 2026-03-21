@@ -146,7 +146,10 @@ void OmniProjectorDock::RefreshMappings()
 
 void OmniProjectorDock::Register()
 {
-	QMainWindow *mainWindow = static_cast<QMainWindow *>(obs_frontend_get_main_window());
-	OmniProjectorDock *dock = new OmniProjectorDock(mainWindow);
-	mainWindow->addDockWidget(Qt::BottomDockWidgetArea, dock);
+	auto cb = [](void *data) -> QWidget * {
+		OBS_UNUSED(data);
+		return new OmniProjectorDock();
+	};
+
+	obs_frontend_add_dock("OmniProjectorDock", "OmniProjector", cb, nullptr);
 }
