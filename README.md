@@ -11,40 +11,46 @@
     *   支援 **輸出 (Program)** 畫面投影。
     *   自動分類 **場景 (Scenes)** 與 **來源 (Sources)**。
     *   刪除設定時，自動關閉該筆投影視窗。
+*   **面板管理**：支援從 OBS 「停駐視窗」選單或「工具」選單重新開啟面板。
 *   **跨平台支援**：支援 Windows 與 macOS。
 
 ## 使用方式
 
-1.  **開啟面板**：安裝後，在 OBS 頂部選單的「視窗 (Windows)」->「停駐視窗 (Docks)」中找到 `OmniProjector`。
+1.  **開啟面板**：
+    *   方式 A：在 OBS 頂部選單的「視窗 (Windows)」->「停駐視窗 (Docks)」中勾選 `OmniProjector`。
+    *   方式 B：若面板不小心關閉且在停駐選單找不到，可點擊「工具 (Tools)」-> `OmniProjector 投影配置`。
 2.  **添加對應**：
     *   點擊「＋ 添加投影對應 (Add)」。
-    *   從左側下拉選單選擇要投影的內容（輸出畫面、場景或來源）。
-    *   從右側下拉選單選擇目標螢幕。
+    *   從左側下拉選單選擇投影內容（輸出畫面、場景或來源）。
+    *   從右側下拉選單選擇目標顯示器。
 3.  **執行投影**：
     *   單筆：點擊該列右側的「Go」。
     *   批量：點擊底部的「全部開啟 (Project All)」。
 4.  **管理與關閉**：
-    *   點擊單筆右側的「X」可刪除設定並關閉該投影。
-    *   點擊底部的「一鍵全關 (Close All)」可關閉所有投影。
+    *   點擊單筆右側的「X」可刪除設定並自動關閉該投影視窗。
+    *   點擊底部的「一鍵全關 (Close All)」可關閉所有本插件開啟的投影畫面。
 
-## 安裝說明
+## 版本更新與下載 (Release)
 
-### 下載預編譯版本
-1.  前往本專案的 [Releases](https://github.com/calebweixun/omni-projector/releases) 頁面。
-2.  下載適合您系統的壓縮檔。
-3.  將插件檔案放入 OBS 的 `plugins` 目錄中。
+本專案配置了自動化編譯 (CI/CD)，若要發布正式版本：
+1.  **推送標籤**：在 Git 中推送符合語義化版本格式的標籤（例如 `1.0.0` 或 `0.2.1-beta1`）。
+    ```bash
+    git tag 1.0.0
+    git push origin 1.0.0
+    ```
+2.  **自動發布**：GitHub Actions 會自動偵測到標籤，編譯所有平台的二進位檔，並自動在 GitHub 倉庫建立一個 **Draft Release**（草稿發佈）。
+3.  **確認發布**：前往 GitHub 的 Releases 頁面，確認草稿無誤後點擊「Publish release」，安裝檔就會公開供大眾下載。
 
-### 自行編譯
+## 自行編譯
 本專案基於 `obs-plugintemplate`，使用 CMake 進行建構。
 
 ```bash
-# 複製專案
 git clone https://github.com/calebweixun/omni-projector.git
 cd omni-projector
 
-# 使用 CMake 編譯 (具體步驟依系統而定)
-cmake -B build
-cmake --build build
+# macOS (需要 Xcode)
+cmake -G Xcode -B build
+cmake --build build --config Release
 ```
 
 ## 開發者資訊
