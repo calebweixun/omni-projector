@@ -5,12 +5,17 @@
 #include <vector>
 #include "omni-projector-settings.hpp"
 
+struct SourceGroups {
+	std::vector<std::string> scenes;
+	std::vector<std::string> sources;
+};
+
 class OmniProjectorManager {
 public:
 	static OmniProjectorManager &Get();
 
 	// 核心功能
-	void StartProjection(obs_source_t *source, int monitor_id);
+	void StartProjection(const std::string &sourceName, int monitor_id);
 	void ProjectAll();
 	void StopAllProjections();
 
@@ -23,7 +28,7 @@ public:
 	void LoadSettings();
 
 	// 資料取得
-	std::vector<std::string> GetAvailableSources();
+	SourceGroups GetAvailableSources();
 	int GetMonitorCount();
 
 private:

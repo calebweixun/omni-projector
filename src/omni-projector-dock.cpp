@@ -74,7 +74,7 @@ void OmniProjectorDock::RefreshMappings()
 	}
 
 	const auto &mappings = OmniProjectorManager::Get().GetMappings();
-	auto sources = OmniProjectorManager::Get().GetAvailableSources();
+	auto sourceGroups = OmniProjectorManager::Get().GetAvailableSources();
 	auto screens = QGuiApplication::screens();
 	int monitorCount = screens.size();
 
@@ -86,8 +86,20 @@ void OmniProjectorDock::RefreshMappings()
 		rowLayout->setContentsMargins(5, 2, 5, 2);
 
 		QComboBox *sourceCombo = new QComboBox();
-		for (const auto &s : sources)
+		
+		// 加入「輸出」與分隔線
+		sourceCombo->addItem("輸出");
+		sourceCombo->insertSeparator(sourceCombo->count());
+
+		// 加入場景
+		for (const auto &s : sourceGroups.scenes)
 			sourceCombo->addItem(QString::fromStdString(s));
+		sourceCombo->insertSeparator(sourceCombo->count());
+
+		// 加入來源
+		for (const auto &s : sourceGroups.sources)
+			sourceCombo->addItem(QString::fromStdString(s));
+
 		sourceCombo->setCurrentText(QString::fromStdString(entry.source_name));
 
 		QComboBox *monitorCombo = new QComboBox();
@@ -99,7 +111,6 @@ void OmniProjectorDock::RefreshMappings()
 
 		QPushButton *goBtn = new QPushButton("Go");
 		QPushButton *delBtn = new QPushButton("X");
-		delBtn->setFixedWidth(30);
 
 		rowLayout->addWidget(sourceCombo);
 		rowLayout->addWidget(monitorCombo);
@@ -123,11 +134,7 @@ void OmniProjectorDock::RefreshMappings()
 		connect(goBtn, &QPushButton::clicked, [sourceCombo, monitorCombo]() {
 			std::string sourceName = sourceCombo->currentText().toStdString();
 			int mIdx = monitorCombo->currentIndex();
-			obs_source_t *source = obs_get_source_by_name(sourceName.c_str());
-			if (source) {
-				OmniProjectorManager::Get().StartProjection(source, mIdx);
-				obs_source_release(source);
-			}
+			OmniProjectorManager::Get().StartProjection(sourceName, mIdx);
 		});
 
 		connect(delBtn, &QPushButton::clicked, [this, i]() {
