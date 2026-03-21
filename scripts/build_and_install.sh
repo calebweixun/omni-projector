@@ -12,6 +12,11 @@ cd "$PROJECT_ROOT"
 OBS_PLUGIN_DIR="$HOME/Library/Application Support/obs-studio/plugins"
 PLUGIN_NAME="omni-projector"
 
+# 2.5 強制使用 Xcode 作為 CMake 的 DEVELOPER_DIR (解決 Command Line Tools 無法使用 Xcode Generator 的問題)
+if [ -d "/Applications/Xcode.app/Contents/Developer" ]; then
+    export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+fi
+
 echo "🚀 開始編譯 OmniProjector..."
 
 # 3. 執行 CMake 配置 (使用 macOS preset)
@@ -35,8 +40,8 @@ echo "✅ 編譯成功！正在安裝到 OBS..."
 # 5. 建立插件目錄（如果不存在）
 mkdir -p "$OBS_PLUGIN_DIR"
 
-# 6. 尋找產出的 .plugin 檔 (Ninja 通常直接在 binaryDir 下)
-SOURCE_BUNDLE="$PROJECT_ROOT/build_macos/$PLUGIN_NAME.plugin"
+# 6. 尋找產出的 .plugin 檔 (Xcode 編譯通常在 build_macos/RelWithDebInfo)
+SOURCE_BUNDLE="$PROJECT_ROOT/build_macos/RelWithDebInfo/$PLUGIN_NAME.plugin"
 
 if [ ! -d "$SOURCE_BUNDLE" ]; then
     # 嘗試在子目錄中尋找
