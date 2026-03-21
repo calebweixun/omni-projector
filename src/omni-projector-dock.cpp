@@ -146,11 +146,9 @@ void OmniProjectorDock::RefreshMappings()
 
 void OmniProjectorDock::Register()
 {
-	auto cb = [](void *data, bool visible) -> QWidget * {
-		(void)data;
-		(void)visible;
-		return new OmniProjectorDock();
-	};
+	QMainWindow *mainWindow = static_cast<QMainWindow *>(obs_frontend_get_main_window());
+	OmniProjectorDock *dock = new OmniProjectorDock(mainWindow);
 
-	obs_frontend_add_dock("OmniProjectorDock", "OmniProjector", cb, nullptr);
+	// 使用 OBS 前端 API 註冊 Dock，讓它能出現在「停駐視窗」選單，並且支援重新開啟
+	obs_frontend_add_custom_qdock("omni_projector_dock", dock);
 }
