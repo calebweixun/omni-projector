@@ -1,6 +1,5 @@
 #pragma once
 
-#include <obs.h>
 #include <string>
 #include <vector>
 
@@ -11,9 +10,6 @@ struct MappingEntry {
 
 class OmniProjectorSettings {
 public:
-    static void Save(const std::vector<MappingEntry>& mappings);
+    static void Save(const std::vector<MappingEntry> &mappings);
     static std::vector<MappingEntry> Load();
-
-private:
-    static const char* SETTINGS_PATH;
 };

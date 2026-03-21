@@ -1,6 +1,5 @@
 #pragma once
 
-#include <obs-frontend-api.h>
 #include <QDockWidget>
 #include <QVBoxLayout>
 
@@ -9,11 +8,11 @@ class OmniProjectorDock : public QDockWidget {
 
 public:
     explicit OmniProjectorDock(QWidget *parent = nullptr);
-    ~OmniProjectorDock() override;
+    ~OmniProjectorDock();
 
     static void Register();
 
 private:
-    void RefreshMappings();
     QVBoxLayout *listLayout;
+    void RefreshMappings();
 };
