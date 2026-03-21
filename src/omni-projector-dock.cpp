@@ -144,11 +144,26 @@ void OmniProjectorDock::RefreshMappings()
 	}
 }
 
+static OmniProjectorDock *g_omniProjectorDock = nullptr;
+
+static void ShowOmniProjectorDock(void *data)
+{
+	(void)data;
+	if (g_omniProjectorDock) {
+		g_omniProjectorDock->show();
+		g_omniProjectorDock->raise();
+	}
+}
+
 void OmniProjectorDock::Register()
 {
 	QMainWindow *mainWindow = static_cast<QMainWindow *>(obs_frontend_get_main_window());
-	OmniProjectorDock *dock = new OmniProjectorDock(mainWindow);
+	g_omniProjectorDock = new OmniProjectorDock(mainWindow);
 
-	// 使用 OBS 前端 API 註冊 Dock，讓它能出現在「停駐視窗」選單，並且支援重新開啟
-	obs_frontend_add_custom_qdock("omni_projector_dock", dock);
+	// 使用 OBS 前端 API 註冊 Dock，讓它能出現在「停駐視窗」選單
+	// ID 必須與 ObjectName("OmniProjectorDock") 完全一致
+	obs_frontend_add_custom_qdock("OmniProjectorDock", g_omniProjectorDock);
+
+	// 加入到「工具 (Tools)」選單，當作備用的開啟方式
+	obs_frontend_add_tools_menu_item("OmniProjector 投影配置", ShowOmniProjectorDock, nullptr);
 }
