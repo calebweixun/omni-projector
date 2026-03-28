@@ -6,6 +6,8 @@
 OmniProjectorManager::OmniProjectorManager()
 {
 	LoadSettings();
+	// initialize localization based on loaded settings
+	ApplyLocalization();
 }
 
 OmniProjectorManager &OmniProjectorManager::Get()
@@ -111,6 +113,37 @@ void OmniProjectorManager::LoadSettings()
 {
 	mappings = OmniProjectorSettings::Load();
 	OmniProjectorSettings::LoadLanguageSettings(languageMode, selectedLanguage);
+}
+
+void OmniProjectorManager::SetLanguageMode(const std::string &mode)
+{
+	languageMode = mode;
+	SaveSettings();
+	ApplyLocalization();
+}
+
+void OmniProjectorManager::SetSelectedLanguage(const std::string &lang)
+{
+	selectedLanguage = lang;
+	SaveSettings();
+	ApplyLocalization();
+}
+
+void OmniProjectorManager::ApplyLocalization()
+{
+	std::string langToLoad = "en-US";
+	if (languageMode == "override" && !selectedLanguage.empty()) {
+		langToLoad = selectedLanguage;
+	} else {
+		// follow_obs behavior: TODO detect OBS language; fallback to en-US
+		// For now, use selectedLanguage if present or en-US
+		if (!selectedLanguage.empty())
+			langToLoad = selectedLanguage;
+	}
+
+	LocalizationManager::Initialize(langToLoad);
+	// Refresh UI to apply translations
+	OmniProjectorDock::RefreshAll();
 }
 
 #include <algorithm>

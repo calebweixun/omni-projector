@@ -13,6 +13,10 @@ struct SourceGroups {
 class OmniProjectorManager {
 public:
 	static OmniProjectorManager &Get();
+	// language control
+	void SetLanguageMode(const std::string &mode);
+	void SetSelectedLanguage(const std::string &lang);
+	void ApplyLocalization();
 
 	// 核心功能
 	void StartProjection(const std::string &sourceName, int monitor_id);
