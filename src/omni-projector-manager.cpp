@@ -2,12 +2,35 @@
 #include <obs-frontend-api.h>
 #include <QApplication>
 #include <QWidget>
+#include <QTimer>
+#include <QLocale>
 
 OmniProjectorManager::OmniProjectorManager()
 {
 	LoadSettings();
 	// initialize localization based on loaded settings
 	ApplyLocalization();
+
+	// Start a timer to poll system locale as a fallback for OBS language change detection
+	localeTimer = new QTimer();
+	localeTimer->setInterval(2000); // 2 seconds
+	lastSystemLocale = QLocale::system().name().toStdString();
+	QObject::connect(localeTimer, &QTimer::timeout, [this]() {
+		std::string cur = QLocale::system().name().toStdString();
+		if (cur != lastSystemLocale) {
+			lastSystemLocale = cur;
+			// map QLocale name (zh_TW) to our file code (zh-TW)
+			std::string mapped = cur;
+			for (auto &c : mapped) if (c == '_') c = '-';
+			// only react when following OBS (follow_obs mode)
+			if (languageMode == "follow_obs") {
+				selectedLanguage = mapped;
+				SaveSettings();
+				ApplyLocalization();
+			}
+		}
+	});
+	localeTimer->start();
 }
 
 OmniProjectorManager &OmniProjectorManager::Get()
