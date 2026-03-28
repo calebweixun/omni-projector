@@ -37,6 +37,9 @@ private:
 	~OmniProjectorManager() = default;
 
 	std::vector<MappingEntry> mappings;
+	// language settings
+	std::string languageMode; // "follow_obs" or "override"
+	std::string selectedLanguage; // ISO code when override
 
 	OmniProjectorManager(const OmniProjectorManager &) = delete;
 	OmniProjectorManager &operator=(const OmniProjectorManager &) = delete;

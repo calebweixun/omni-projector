@@ -104,11 +104,13 @@ void OmniProjectorManager::RemoveMapping(int index)
 void OmniProjectorManager::SaveSettings()
 {
 	OmniProjectorSettings::Save(mappings);
+	OmniProjectorSettings::SaveLanguageSettings(languageMode, selectedLanguage);
 }
 
 void OmniProjectorManager::LoadSettings()
 {
 	mappings = OmniProjectorSettings::Load();
+	OmniProjectorSettings::LoadLanguageSettings(languageMode, selectedLanguage);
 }
 
 #include <algorithm>
