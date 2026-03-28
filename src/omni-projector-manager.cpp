@@ -4,6 +4,9 @@
 #include <QWidget>
 #include <QTimer>
 #include <QLocale>
+// localization and UI
+#include "localization.hpp"
+#include "omni-projector-dock.hpp"
 
 OmniProjectorManager::OmniProjectorManager()
 {
