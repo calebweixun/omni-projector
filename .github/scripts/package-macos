@@ -61,32 +61,48 @@ package() {
   local -i package=0
 
   local -a args
-  while (( # )) {
-    case ${1} {
+  while (( $# )); do
+    case "${1}" in
+      --)
+        shift
+        args+=("$@")
+        break
+        ;;
       -c|--config)
-        if (( # == 1 )) || [[ ${2:0:1} == '-' ]] {
+        if (( $# == 1 )) || [[ ${2:0:1} == '-' ]]; then
           log_error "Missing value for option %B${1}%b"
           exit 2
-        }
-        ;;
-    }
-    case ${1} {
-      --) shift; args+=($@); break ;;
-      -c|--config)
-        if (( !${_valid_configs[(Ie)${2}]} )) {
+        fi
+        if (( ! ${_valid_configs[(Ie)$2]} )); then
           log_error "Invalid value %B${2}%b for option %B${1}%b"
           exit 2
-        }
+        fi
         config=${2}
         shift 2
         ;;
-      -s|--codesign) typeset -g codesign=1; shift ;;
-      -n|--notarize) typeset -g notarize=1; typeset -g codesign=1; shift ;;
-      -p|--package) typeset -g package=1; shift ;;
-      --debug) debug=1; shift ;;
-      *) log_error "Unknown option: %B${1}%b"; exit 2 ;;
-    }
-  }
+      -s|--codesign)
+        typeset -g codesign=1
+        shift
+        ;;
+      -n|--notarize)
+        typeset -g notarize=1
+        typeset -g codesign=1
+        shift
+        ;;
+      -p|--package)
+        typeset -g package=1
+        shift
+        ;;
+      --debug)
+        debug=1
+        shift
+        ;;
+      *)
+        log_error "Unknown option: %B${1}%b"
+        exit 2
+        ;;
+    esac
+  done
 
   set -- ${(@)args}
 
@@ -119,7 +135,10 @@ package() {
       mkdir -p ${project_root}/release/${config}/temp
 
       product_version="$(jq -r '.version' ${project_root}/buildspec.json 2>/dev/null || echo '0.0.0')"
-      bundle_id="$(jq -r '.platformConfig.macos.bundleId // "com.example.'${product_name}'"' ${project_root}/buildspec.json 2>/dev/null || echo "com.example.${product_name}")"
+      bundle_id="$(jq -r '.platformConfig.macos.bundleId // empty' ${project_root}/buildspec.json 2>/dev/null || true)"
+      if [[ -z ${bundle_id} ]] {
+        bundle_id="com.example.${product_name}"
+      }
 
       /usr/bin/pkgbuild --identifier "${bundle_id}" --version "${product_version}" --root "${project_root}/release/${config}/package" "${project_root}/release/${config}/temp/${product_name}.pkg" || {
         log_error 'pkgbuild failed to create component package.'
@@ -135,7 +154,7 @@ package() {
       # cleanup staging dir (leave temp/pkg for inspection if needed)
       rm -rf ${project_root}/release/${config}/package
       log_group "Generated ${product_name}.pkg"
-    fi
+    }
 
     log_group "Packaging ${product_name}..."
     pushd ${project_root}
@@ -157,7 +176,7 @@ package() {
     }
 
     if (( codesign && notarize )) {
-      if ! [[ ${CODESIGN_IDENT} != '-' && ${CODESIGN_TEAM} && {CODESIGN_IDENT_USER} && ${CODESIGN_IDENT_PASS} ]] {
+      if ! [[ ${CODESIGN_IDENT} != '-' && ${CODESIGN_TEAM} && ${CODESIGN_IDENT_USER} && ${CODESIGN_IDENT_PASS} ]] {
         log_error "Notarization requires Apple ID and application password."
         return 2
       }
