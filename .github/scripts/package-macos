@@ -106,9 +106,36 @@ package() {
 
   if (( package )) {
     if [[ ! -f ${project_root}/release/${config}/${product_name}.pkg ]] {
-      log_error 'Installer Package not found. Run the build script or the CMake build and install procedures first.'
-      return 2
-    }
+      # Try to generate a .pkg from the installed .plugin if possible
+      log_group "No installer package found; attempting to generate ${product_name}.pkg from plugin"
+
+      if [[ ! -d ${project_root}/release/${config}/${product_name}.plugin ]]; then
+        log_error 'No plugin bundle found to build installer from. Run the build/install step first.'
+        return 2
+      fi
+
+      mkdir -p ${project_root}/release/${config}/package/Library/Application\ Support/obs-studio/plugins
+      cp -R ${project_root}/release/${config}/${product_name}.plugin ${project_root}/release/${config}/package/Library/Application\ Support/obs-studio/plugins/
+      mkdir -p ${project_root}/release/${config}/temp
+
+      product_version="$(jq -r '.version' ${project_root}/buildspec.json 2>/dev/null || echo '0.0.0')"
+      bundle_id="$(jq -r '.platformConfig.macos.bundleId // "com.example.'${product_name}'"' ${project_root}/buildspec.json 2>/dev/null || echo "com.example.${product_name}")"
+
+      /usr/bin/pkgbuild --identifier "${bundle_id}" --version "${product_version}" --root "${project_root}/release/${config}/package" "${project_root}/release/${config}/temp/${product_name}.pkg" || {
+        log_error 'pkgbuild failed to create component package.'
+        return 2
+      }
+
+      # Create a product archive wrapping the component package
+      /usr/bin/productbuild --package "${project_root}/release/${config}/temp/${product_name}.pkg" "${project_root}/release/${config}/${product_name}.pkg" || {
+        log_error 'productbuild failed to create installer package.'
+        return 2
+      }
+
+      # cleanup staging dir (leave temp/pkg for inspection if needed)
+      rm -rf ${project_root}/release/${config}/package
+      log_group "Generated ${product_name}.pkg"
+    fi
 
     log_group "Packaging ${product_name}..."
     pushd ${project_root}
