@@ -2,10 +2,40 @@
 #include <obs-frontend-api.h>
 #include <QApplication>
 #include <QWidget>
+#include <QTimer>
+#include <QLocale>
+// localization and UI
+#include "localization.hpp"
+#include "omni-projector-dock.hpp"
 
 OmniProjectorManager::OmniProjectorManager()
 {
 	LoadSettings();
+	// initialize localization based on loaded settings
+	ApplyLocalization();
+
+	// Start a timer to poll system locale as a fallback for OBS language change detection
+	localeTimer = new QTimer();
+	localeTimer->setInterval(2000); // 2 seconds
+	lastSystemLocale = QLocale::system().name().toStdString();
+	QObject::connect(localeTimer, &QTimer::timeout, [this]() {
+		std::string cur = QLocale::system().name().toStdString();
+		if (cur != lastSystemLocale) {
+			lastSystemLocale = cur;
+			// map QLocale name (zh_TW) to our file code (zh-TW)
+			std::string mapped = cur;
+			for (auto &c : mapped)
+				if (c == '_')
+					c = '-';
+			// only react when following OBS (follow_obs mode)
+			if (languageMode == "follow_obs") {
+				selectedLanguage = mapped;
+				SaveSettings();
+				ApplyLocalization();
+			}
+		}
+	});
+	localeTimer->start();
 }
 
 OmniProjectorManager &OmniProjectorManager::Get()
@@ -104,11 +134,44 @@ void OmniProjectorManager::RemoveMapping(int index)
 void OmniProjectorManager::SaveSettings()
 {
 	OmniProjectorSettings::Save(mappings);
+	OmniProjectorSettings::SaveLanguageSettings(languageMode, selectedLanguage);
 }
 
 void OmniProjectorManager::LoadSettings()
 {
 	mappings = OmniProjectorSettings::Load();
+	OmniProjectorSettings::LoadLanguageSettings(languageMode, selectedLanguage);
+}
+
+void OmniProjectorManager::SetLanguageMode(const std::string &mode)
+{
+	languageMode = mode;
+	SaveSettings();
+	ApplyLocalization();
+}
+
+void OmniProjectorManager::SetSelectedLanguage(const std::string &lang)
+{
+	selectedLanguage = lang;
+	SaveSettings();
+	ApplyLocalization();
+}
+
+void OmniProjectorManager::ApplyLocalization()
+{
+	std::string langToLoad = "en-US";
+	if (languageMode == "override" && !selectedLanguage.empty()) {
+		langToLoad = selectedLanguage;
+	} else {
+		// follow_obs behavior: TODO detect OBS language; fallback to en-US
+		// For now, use selectedLanguage if present or en-US
+		if (!selectedLanguage.empty())
+			langToLoad = selectedLanguage;
+	}
+
+	LocalizationManager::Initialize(langToLoad);
+	// Refresh UI to apply translations
+	OmniProjectorDock::RefreshAll();
 }
 
 #include <algorithm>

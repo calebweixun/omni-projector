@@ -34,11 +34,14 @@ if(ENABLE_QT)
   )
 endif()
 
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE 
-  src/plugin-main.cpp
-  src/omni-projector-dock.cpp
-  src/omni-projector-manager.cpp
-  src/omni-projector-settings.cpp
+target_sources(
+  ${CMAKE_PROJECT_NAME}
+  PRIVATE
+    src/localization.cpp
+    src/omni-projector-dock.cpp
+    src/omni-projector-manager.cpp
+    src/omni-projector-settings.cpp
+    src/plugin-main.cpp
 )
 
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})

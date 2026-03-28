@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include "omni-projector-settings.hpp"
+#include <QTimer>
+#include <QLocale>
 
 struct SourceGroups {
 	std::vector<std::string> scenes;
@@ -13,6 +15,10 @@ struct SourceGroups {
 class OmniProjectorManager {
 public:
 	static OmniProjectorManager &Get();
+	// language control
+	void SetLanguageMode(const std::string &mode);
+	void SetSelectedLanguage(const std::string &lang);
+	void ApplyLocalization();
 
 	// 核心功能
 	void StartProjection(const std::string &sourceName, int monitor_id);
@@ -37,6 +43,11 @@ private:
 	~OmniProjectorManager() = default;
 
 	std::vector<MappingEntry> mappings;
+	// language settings
+	std::string languageMode;     // "follow_obs" or "override"
+	std::string selectedLanguage; // ISO code when override
+	QTimer *localeTimer = nullptr;
+	std::string lastSystemLocale;
 
 	OmniProjectorManager(const OmniProjectorManager &) = delete;
 	OmniProjectorManager &operator=(const OmniProjectorManager &) = delete;
