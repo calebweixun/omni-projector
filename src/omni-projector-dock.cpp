@@ -24,8 +24,13 @@ OmniProjectorDock::OmniProjectorDock(QWidget *parent) : QDockWidget(parent)
 
 	// 頂部：添加按鈕與重新整理
 	QHBoxLayout *topLayout = new QHBoxLayout();
-	QPushButton *addBtn = new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.add").empty() ? "＋ 添加投影對應 (Add)" : LocalizationManager::Translate("button.add")));
-	QPushButton *refreshBtn = new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.refresh").empty() ? "↺ 重新整理 (Refresh)" : LocalizationManager::Translate("button.refresh")));
+	QPushButton *addBtn = new QPushButton(QString::fromStdString(
+		LocalizationManager::Translate("button.add").empty() ? "＋ 添加投影對應 (Add)"
+								     : LocalizationManager::Translate("button.add")));
+	QPushButton *refreshBtn =
+		new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.refresh").empty()
+							       ? "↺ 重新整理 (Refresh)"
+							       : LocalizationManager::Translate("button.refresh")));
 	topLayout->addWidget(addBtn);
 	topLayout->addWidget(refreshBtn);
 	mainLayout->addLayout(topLayout);
@@ -41,8 +46,14 @@ OmniProjectorDock::OmniProjectorDock(QWidget *parent) : QDockWidget(parent)
 
 	// 底部：批次控制
 	QHBoxLayout *bottomLayout = new QHBoxLayout();
-	QPushButton *projectAllBtn = new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.project_all").empty() ? "全部開啟 (Project All)" : LocalizationManager::Translate("button.project_all")));
-	QPushButton *stopAllBtn = new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.stop_all").empty() ? "一鍵全關 (Close All)" : LocalizationManager::Translate("button.stop_all")));
+	QPushButton *projectAllBtn =
+		new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.project_all").empty()
+							       ? "全部開啟 (Project All)"
+							       : LocalizationManager::Translate("button.project_all")));
+	QPushButton *stopAllBtn =
+		new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.stop_all").empty()
+							       ? "一鍵全關 (Close All)"
+							       : LocalizationManager::Translate("button.stop_all")));
 	bottomLayout->addWidget(projectAllBtn);
 	bottomLayout->addWidget(stopAllBtn);
 	mainLayout->addLayout(bottomLayout);
@@ -113,8 +124,14 @@ void OmniProjectorDock::RefreshMappings()
 		}
 		monitorCombo->setCurrentIndex(entry.monitor_index);
 
-		QPushButton *goBtn = new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.go").empty() ? "Go" : LocalizationManager::Translate("button.go")));
-		QPushButton *delBtn = new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.del").empty() ? "X" : LocalizationManager::Translate("button.del")));
+		QPushButton *goBtn =
+			new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.go").empty()
+								       ? "Go"
+								       : LocalizationManager::Translate("button.go")));
+		QPushButton *delBtn =
+			new QPushButton(QString::fromStdString(LocalizationManager::Translate("button.del").empty()
+								       ? "X"
+								       : LocalizationManager::Translate("button.del")));
 
 		rowLayout->addWidget(sourceCombo);
 		rowLayout->addWidget(monitorCombo);

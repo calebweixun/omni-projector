@@ -44,7 +44,7 @@ private:
 
 	std::vector<MappingEntry> mappings;
 	// language settings
-	std::string languageMode; // "follow_obs" or "override"
+	std::string languageMode;     // "follow_obs" or "override"
 	std::string selectedLanguage; // ISO code when override
 	QTimer *localeTimer = nullptr;
 	std::string lastSystemLocale;

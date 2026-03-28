@@ -24,7 +24,9 @@ OmniProjectorManager::OmniProjectorManager()
 			lastSystemLocale = cur;
 			// map QLocale name (zh_TW) to our file code (zh-TW)
 			std::string mapped = cur;
-			for (auto &c : mapped) if (c == '_') c = '-';
+			for (auto &c : mapped)
+				if (c == '_')
+					c = '-';
 			// only react when following OBS (follow_obs mode)
 			if (languageMode == "follow_obs") {
 				selectedLanguage = mapped;

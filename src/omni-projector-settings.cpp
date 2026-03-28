@@ -58,7 +58,8 @@ std::vector<MappingEntry> OmniProjectorSettings::Load()
 			size_t count = obs_data_array_count(array);
 			for (size_t i = 0; i < count; i++) {
 				obs_data_t *obj = obs_data_array_item(array, i);
-				mappings.push_back({obs_data_get_string(obj, "source"), (int)obs_data_get_int(obj, "monitor")});
+				mappings.push_back(
+					{obs_data_get_string(obj, "source"), (int)obs_data_get_int(obj, "monitor")});
 				obs_data_release(obj);
 			}
 			obs_data_array_release(array);
